@@ -1,0 +1,2 @@
+import { adminOnly } from '../middleware/admin-only.js';import { cpuBlock } from '../metrics.js';import { log } from '../logger.js';
+export function registerDemo(bot,config){bot.command('cpudemo',adminOnly(config,async ctx=>{cpuBlock(5000);await ctx.reply('CPU demo finished after 5 seconds.')}));bot.command('crashdemo',adminOnly(config,async ctx=>{log('warn','demo_crash_requested',{userId:ctx.from?.id,pid:process.pid});await ctx.reply('Process will exit with code 1; systemd should restart it.');setTimeout(()=>process.exit(1),500)}));}
