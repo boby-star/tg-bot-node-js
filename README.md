@@ -92,3 +92,43 @@ journalctl -u tg-bot -n 30 --no-pager -o cat
 ```
 
 Команды бота: `/start`, `/help`, `/ping`, `/status`, `/whoami`, `/asyncdemo`. Для `/cpudemo` и `/crashdemo` задайте `DEMO_MODE=true` и свой numeric ID в `BOT_ADMIN_IDS`, полученный через `/whoami`.
+
+## Две частые ошибки
+
+### `Cannot find module 'buffer-alloc'`
+
+Эта ошибка была вызвана неполным lock-файлом в предыдущей версии проекта. Обновите репозиторий и выполните чистую установку строго из исправленного `package-lock.json`:
+
+```bash
+cd /opt/tg-bot-node-js
+git pull --ff-only
+rm -rf node_modules
+npm ci
+npm run dev
+```
+
+Не исправляйте её глобальной установкой пакета и не запускайте `npm update`.
+
+### `status=203/EXEC` и путь `/root/.nvm/...`
+
+Unit запускается от `tgbot`, поэтому он не может использовать runtime внутри `/root`. Самый простой вариант для уже установленного NVM Node.js — скопировать сам runtime в системный доступный путь и заменить `ExecStart`:
+
+```bash
+sudo systemctl stop tg-bot
+sudo install -m 0755 "$(readlink -f "$(command -v node)")" /usr/local/bin/node
+/usr/local/bin/node --version
+sudo -u tgbot /usr/local/bin/node --version
+sudo sed -i 's#^ExecStart=.*#ExecStart=/usr/local/bin/node /opt/tg-bot/src/index.js#' /etc/systemd/system/tg-bot.service
+sudo systemctl daemon-reload
+sudo systemctl reset-failed tg-bot
+sudo systemctl start tg-bot
+systemctl status tg-bot --no-pager
+```
+
+Для долгосрочной эксплуатации предпочтительнее установить Node.js 24 системным пакетным менеджером и указать его абсолютный путь. Перед запуском всегда проверяйте путь от имени service user:
+
+```bash
+NODE_BIN=$(readlink -f "$(command -v node)")
+case "$NODE_BIN" in /root/*) echo "Нельзя использовать $NODE_BIN в unit"; exit 1;; esac
+sudo -u tgbot test -x "$NODE_BIN"
+```
