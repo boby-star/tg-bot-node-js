@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { startHealthServer } from '../src/health-server.js';
+const config={healthHost:'127.0.0.1',healthPort:0,demoMode:false};const metrics={state:{ready:false},status:()=>({safe:true})};
+test('health and readiness endpoints',async t=>{const server=await startHealthServer(config,metrics);t.after(()=>new Promise(r=>server.close(r)));const base=`http://127.0.0.1:${server.address().port}`;assert.equal((await fetch(base+'/healthz')).status,200);assert.equal((await fetch(base+'/readyz')).status,503);metrics.state.ready=true;assert.equal((await fetch(base+'/readyz')).status,200);assert.deepEqual(await (await fetch(base+'/status')).json(),{safe:true})});

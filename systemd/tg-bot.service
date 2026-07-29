@@ -1,0 +1,24 @@
+[Unit]
+Description=Training Telegram Bot on Node.js
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=tgbot
+Group=tgbot
+WorkingDirectory=/opt/tg-bot
+EnvironmentFile=/etc/tg-bot.env
+ExecStart=/usr/bin/node /opt/tg-bot/src/index.js
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=15
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tg-bot
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
