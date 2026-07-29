@@ -1,0 +1,2 @@
+import { Telegraf } from 'telegraf';import { registerPublic } from './handlers/public.js';import { registerDemo } from './handlers/demo.js';import { requestLogging } from './middleware/request-logging.js';import { log,errorFields } from './logger.js';
+export function createBot(config,metrics){const bot=new Telegraf(config.token);bot.use(requestLogging(metrics));registerPublic(bot,metrics);registerDemo(bot,config);bot.catch((e,ctx)=>{metrics.state.errors++;log('error','telegraf_error',{...errorFields(e),updateId:ctx.update?.update_id})});return bot;}

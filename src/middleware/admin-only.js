@@ -1,0 +1,1 @@
+export const adminOnly=(config,handler)=>async ctx=>{if(!config.demoMode)return ctx.reply('Demo commands are disabled.');if(!config.adminIds.includes(ctx.from?.id))return ctx.reply('Forbidden.');return handler(ctx);};

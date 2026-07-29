@@ -1,0 +1,1 @@
+import { telegram } from './tg-api.mjs';const i=await telegram('getWebhookInfo');console.log(JSON.stringify({url:i.url,pendingUpdateCount:i.pending_update_count,lastErrorDate:i.last_error_date,lastErrorMessage:i.last_error_message},null,2));
